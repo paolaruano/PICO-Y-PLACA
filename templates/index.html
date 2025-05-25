@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Detección de Placa y Asistente</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      padding: 20px;
+      text-align: center;
+    }
+    video, img {
+      border: 2px solid #000;
+      width: 80%;
+      max-width: 600px;
+      margin-bottom: 20px;
+    }
+    #info {
+      font-size: 1.2em;
+      margin-bottom: 30px;
+    }
+    input, button {
+      padding: 10px;
+      font-size: 1em;
+      margin: 5px;
+    }
+    #respuesta {
+      margin-top: 20px;
+      font-weight: bold;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <h1>Detección de Placas y Asistente</h1>
+
+  <!-- Video en vivo -->
+  <div>
+    <img src="{{ url_for('video_feed') }}" alt="Cámara en vivo">
+  </div>
+
+  <!-- Última placa detectada -->
+  <div id="info">Última placa: cargando...</div>
+
+  <!-- Asistente -->
+  <div>
+    <input type="text" id="inputAsistente" placeholder="Ej: ¿Qué pico y placa hay el lunes?">
+    <button onclick="enviarAlAsistente()">Preguntar</button>
+    <p id="respuesta"></p>
+  </div>
+
+  <script>
+    function actualizarPlaca() {
+      fetch('/placa_info')
+        .then(response => response.json())
+        .then(data => {
+          if (data.error) {
+            document.getElementById('info').innerText = data.error;
+          } else {
+            document.getElementById('info').innerText = 'Última placa detectada: ' + data.placa;
+          }
+        });
+    }
+
+    setInterval(actualizarPlaca, 3000);  // Actualiza cada 3 segundos
+    actualizarPlaca();
+
+    function enviarAlAsistente() {
+      const mensaje = document.getElementById('inputAsistente').value;
+      fetch('/asistente', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mensaje: mensaje })
+      })
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById('respuesta').innerText = data.respuesta;
+      });
+    }
+  </script>
+</body>
+</html>
